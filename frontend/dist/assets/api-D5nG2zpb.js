@@ -1,0 +1,1 @@
+const t="/api";async function o(n){const e=new FormData;e.append("image",n);const a=await fetch(`${t}/analyze`,{method:"POST",body:e});if(!a.ok)throw new Error(`Analysis failed: ${a.statusText}`);return a.json()}export{o as analyzeImage};
