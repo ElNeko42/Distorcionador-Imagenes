@@ -21,10 +21,11 @@ Corre en http://localhost:5173
 
 ## Configurar el análisis con IA (opcional)
 
+El backend usa [OpenRouter](https://openrouter.ai/keys) para llamar a modelos de visión.
 Establece la variable de entorno antes de arrancar el backend:
 
 ```
-set ANTHROPIC_API_KEY=sk-ant-...
+set OPENROUTER_API_KEY=sk-or-...
 mvn spring-boot:run
 ```
 

@@ -1,0 +1,23 @@
+# Maven build output
+backend/target/
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Secrets / local env
+.env
+.env.local
+*.local.properties
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -17,33 +17,38 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AiAnalysisService {
 
-    @Value("${anthropic.api.key:}")
+    @Value("${openrouter.api.key:}")
     private String apiKey;
 
-    @Value("${anthropic.api.url}")
+    @Value("${openrouter.api.url}")
     private String apiUrl;
 
-    @Value("${anthropic.model}")
+    @Value("${openrouter.model}")
     private String model;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public boolean isConfigured() {
+        return apiKey != null && !apiKey.isBlank();
+    }
+
     public List<LabelDto> analyzeImage(byte[] imageBytes, String mediaType) {
         if (apiKey == null || apiKey.isBlank()) {
-            log.info("No Anthropic API key configured, returning mock labels");
+            log.info("No OpenRouter API key configured, returning mock labels");
             return getMockLabels();
         }
 
         try {
-            return callAnthropicVision(imageBytes, mediaType);
+            return callOpenRouterVision(imageBytes, mediaType);
         } catch (Exception e) {
             log.error("AI analysis failed, falling back to mock labels", e);
             return getMockLabels();
         }
     }
 
-    private List<LabelDto> callAnthropicVision(byte[] imageBytes, String mediaType) throws Exception {
+    private List<LabelDto> callOpenRouterVision(byte[] imageBytes, String mediaType) throws Exception {
         String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+        String dataUri = "data:" + mediaType + ";base64," + base64Image;
 
         String prompt = """
                 Analyze this image carefully. Identify 15-20 distinct visual elements, textures,
@@ -59,20 +64,16 @@ public class AiAnalysisService {
                 [{"text":"LABEL","count":"5+","x":25,"y":30}, ...]
                 """;
 
-        Map<String, Object> imageContent = Map.of(
-                "type", "image",
-                "source", Map.of(
-                        "type", "base64",
-                        "media_type", mediaType,
-                        "data", base64Image
-                )
-        );
-
         Map<String, Object> textContent = Map.of("type", "text", "text", prompt);
+
+        Map<String, Object> imageContent = Map.of(
+                "type", "image_url",
+                "image_url", Map.of("url", dataUri)
+        );
 
         Map<String, Object> message = Map.of(
                 "role", "user",
-                "content", List.of(imageContent, textContent)
+                "content", List.of(textContent, imageContent)
         );
 
         Map<String, Object> requestBody = Map.of(
@@ -83,15 +84,14 @@ public class AiAnalysisService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-api-key", apiKey);
-        headers.set("anthropic-version", "2023-06-01");
+        headers.setBearerAuth(apiKey);
 
         RestTemplate restTemplate = new RestTemplate();
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
         ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, request, String.class);
 
         JsonNode root = objectMapper.readTree(response.getBody());
-        String content = root.path("content").get(0).path("text").asText();
+        String content = root.path("choices").get(0).path("message").path("content").asText();
 
         // Strip markdown code blocks if present
         content = content.replaceAll("```json\\s*", "").replaceAll("```\\s*", "").trim();

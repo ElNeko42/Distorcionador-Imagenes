@@ -152,6 +152,14 @@ export default function ControlPanel({
           displayValue={hv(config.hBalance)}
           onChange={v => onConfigChange('hBalance', v)}
         />
+        <SliderRow
+          label="Glitch rayado"
+          value={config.glitchDensity}
+          min={0}
+          max={1}
+          displayValue={pct(config.glitchDensity)}
+          onChange={v => onConfigChange('glitchDensity', v)}
+        />
       </Section>
 
       <Section title="Configuración de visualización">

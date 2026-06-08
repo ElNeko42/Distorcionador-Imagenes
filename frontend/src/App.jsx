@@ -5,9 +5,10 @@ import ImageCanvas from './components/ImageCanvas'
 const DEFAULT_CONFIG = {
   imageScale: 0.85,
   gridComplexity: 8,
-  gridDensity: 0.5,
-  stretchIntensity: 0.7,
-  hBalance: 0.7,
+  gridDensity: 0.6,
+  stretchIntensity: 0.85,
+  hBalance: 1.0,
+  glitchDensity: 0.25,
   showGrid: true,
   showLabels: true,
 }

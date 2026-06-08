@@ -34,13 +34,10 @@ public class ImageController {
             byte[] imageBytes = file.getBytes();
             var labels = aiAnalysisService.analyzeImage(imageBytes, contentType);
 
-            boolean usedAi = System.getenv("ANTHROPIC_API_KEY") != null
-                    && !System.getenv("ANTHROPIC_API_KEY").isBlank();
-
             return ResponseEntity.ok(AnalysisResponse.builder()
                     .labels(labels)
                     .status("Se generaron " + labels.size() + " etiquetas correctamente")
-                    .usedAi(usedAi)
+                    .usedAi(aiAnalysisService.isConfigured())
                     .build());
 
         } catch (Exception e) {
